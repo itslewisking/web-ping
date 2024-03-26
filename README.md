@@ -1,5 +1,8 @@
 Site Pinger with Stats
 
+requires
+python 3.10 +
+
 usage:
 .\letsplay.py number_of_runs number_of_instances sleep_time url logging_option
 
