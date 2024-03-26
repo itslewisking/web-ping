@@ -46,29 +46,32 @@ async def call_loop(
 ) -> None:
     async with aiohttp.ClientSession() as client:
         for i in range(runs):
-            print("\r     ", end="")
-            print(f"\rlap {i+1}: {((i+1)/runs)*100:.2f}%")
-            start_time = time.monotonic()
-
-            jobs = [fetch(url, client) for _ in range(workers)]
-
-            responses = await asyncio.gather(*jobs)
-            end_time = time.monotonic() - start_time
-            results.append(responses)
-            print("calls complete, sleeping")
-            if i + 1 == runs:
-                return
-
-            if logging:
-                asyncio.create_task(log_to_file(str(responses)))
-
-            pulsing_task = asyncio.create_task(pulse())
-            await asyncio.sleep(max(0, interval_in_seconds - end_time))
-            pulsing_task.cancel()
-
             try:
-                await pulsing_task  # await tells it to wait until it's done, we cancelled it so immediately finishes
-            except asyncio.CancelledError:
+                print("\r     ", end="")
+                print(f"\rlap {i+1}: {((i+1)/runs)*100:.2f}%")
+                start_time = time.monotonic()
+
+                jobs = [fetch(url, client) for _ in range(workers)]
+
+                responses = await asyncio.gather(*jobs)
+                end_time = time.monotonic() - start_time
+                results.append(responses)
+                print("calls complete, sleeping")
+                if i + 1 == runs:
+                    return
+
+                if logging:
+                    asyncio.create_task(log_to_file(str(responses)))
+
+                pulsing_task = asyncio.create_task(pulse())
+                await asyncio.sleep(max(0, interval_in_seconds - end_time))
+                pulsing_task.cancel()
+
+                try:
+                    await pulsing_task  # await tells it to wait until it's done, we cancelled it so immediately finishes
+                except asyncio.CancelledError:
+                    pass
+            except:
                 pass
     return
 
